@@ -1,7 +1,7 @@
 import { Firestore } from "firebase-admin/firestore";
 import { Usuario } from "../models/Usuario.js";
 
-export class UsuarioService {
+export class UserService {
   constructor(private db: Firestore, public coleccionNombre: string) {}
   async guardar(usuario: Usuario): Promise<void> {
     await this.db

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { UsuarioService } from "../services/UsuarioService.js";
+import { UserService } from "../services/UsuarioService.js";
 import { Usuario } from "../models/Usuario.js";
 import admin from "../config/dbFirebase.js";
 
@@ -12,13 +12,13 @@ interface RequestUser extends Request {
   };
 }
 
-export class UsuarioControllers {
-  private service: UsuarioService;
+export class UserControllers {
+  private service: UserService;
   constructor(
     db: FirebaseFirestore.Firestore = admin.firestore(),
     coleccion: string = "usuario"
   ) {
-    this.service = new UsuarioService(db, coleccion);
+    this.service = new UserService(db, coleccion);
   }
 
   public autenticarUsuario = async (req: Request, res: Response) => {
@@ -41,12 +41,12 @@ export class UsuarioControllers {
       res.status(200).json({
         mensaje: "Usuario autenticado y guardado",
       });
-
     } catch (error) {
       console.error("Error al autenticar usuario:", error);
       res.status(500).json({ error: "Error interno del servidor" });
     }
   };
+
   public obtenerUsuarioPorUid = async (req: Request, res: Response) => {
     try {
       const uid = req.params.uid;
@@ -57,7 +57,6 @@ export class UsuarioControllers {
       if (!usuario) {
         return res.status(404).json({ error: "Usuario no encontrado" });
       }
-
       res.status(200).json(usuario);
     } catch (error) {
       console.error("Error al obtener usuario:", error);

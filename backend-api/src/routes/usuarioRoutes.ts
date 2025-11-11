@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { UsuarioControllers } from '../controllers/UsuarioControllers.js';
+import { UserControllers } from '../controllers/UsuarioControllers.js';
 import { verifyToken } from '../middleware/verifyToken.js';
 const router = Router();
-const controllers = new UsuarioControllers();
+const controllers = new UserControllers();
 
 router.post('/auth', verifyToken, controllers.autenticarUsuario);
 router.get('/usuario/:uid', controllers.obtenerUsuarioPorUid);

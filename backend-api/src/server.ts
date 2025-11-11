@@ -1,14 +1,33 @@
 
 import express from 'express';
 import cors from 'cors';
-import usuario from './routes/usuarioRoutes.js';
+import user from './routes/usuarioRoutes.js';
+import product from './routes/productRoutes.js';
+/*
+import path from 'path';
+import { fileURLToPath } from 'url';
+*/
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use("/v1",usuario );
+app.use("/v1",user );
+app.use('/v1',product);
+
+// 🔧 Para obtener __dirname en ESModules
+/*const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+const astroPath = path.join(__dirname, '../../documentacion-api/dist');
+app.use(express.static(astroPath));
+
+app.use((req, res) => {
+  res.sendFile(path.join(astroPath, 'index.html'));
+});*/
+
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto: http://localhost:${PORT}`);
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
