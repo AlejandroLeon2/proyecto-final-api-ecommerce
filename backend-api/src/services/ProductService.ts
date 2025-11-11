@@ -1,28 +1,32 @@
-import { Firestore ,FieldValue } from "firebase-admin/firestore";
+import { Firestore } from "firebase-admin/firestore";
 import type { ProductInterface } from "../interface/ProductInterface.js";
 export class ProductService {
   constructor(public db: Firestore, public collectionName: string) {}
   async createProduct(product: ProductInterface): Promise<void> {
-    const productSave=this.db.collection(this.collectionName).doc();
-    const productId= { ...product, id: productSave.id ,createdAt: FieldValue.serverTimestamp(),}
+    const productSave = this.db.collection(this.collectionName).doc();
+    const productId = {
+      ...product,
+      id: productSave.id,
+      createdAt: new Date().toISOString(),
+    };
     await productSave.set(productId);
   }
   async getAllProducts(): Promise<ProductInterface[]> {
     const snapshot = await this.db.collection(this.collectionName).get();
     const products: ProductInterface[] = snapshot.docs.map((item) => {
+
       const data = item.data();
       return {
         id: item.id,
         name: data.name,
         description: data.description,
         price: data.price,
-        createdAt: data.createdAt.toDate(),
+        createdAt: data.createdAt ?? undefined,
         stock: data.stock,
         category: data.category,
         status: data.status,
         image: data.image,
-        updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined,
-
+        updatedAt: data.updatedAt ?? undefined,
       };
     });
     return products;
@@ -37,7 +41,7 @@ export class ProductService {
       name: data.name,
       description: data.description,
       price: data.price,
-      createdAt: data.createdAt.toDate(),
+      createdAt: data.createdAt ? data.createdAt.toDate() : undefined,
       stock: data.stock,
       category: data.category,
       status: data.status,
@@ -51,9 +55,9 @@ export class ProductService {
   ): Promise<void> {
     const productSave = this.db.collection(this.collectionName).doc(id);
     await productSave.update({
-    ...product,
-    updatedAt: FieldValue.serverTimestamp(), 
-  });
+      ...product,
+      updatedAt: new Date().toISOString(),
+    });
   }
   async deleteProduct(id: string) {
     const productSave = this.db.collection(this.collectionName).doc(id);

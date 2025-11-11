@@ -17,7 +17,7 @@ export class ProductControllers {
         return res.status(400).json({ message: "Se requieren mas campos" });
       }
       await this.service.createProduct(product);
-      res.status(201).json;
+      res.status(201).json({ message: "Producto creado correctamente" });
     } catch (error) {
       console.error("Error al crear producto:", error);
       return res.status(500).json({ message: "Error del server" });

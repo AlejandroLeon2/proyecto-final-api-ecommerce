@@ -7,9 +7,9 @@ export class Product {
     public category: string,
     public status: "active" | "inactive",
     public image: string,
-    public createdAt?: Date,
+    public createdAt?: string,
     public id?: string,
-    public updatedAt?: Date
+    public updatedAt?: string
   ) {}
   toFirestore() {
     return {
