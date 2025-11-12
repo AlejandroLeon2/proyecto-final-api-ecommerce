@@ -1,6 +1,17 @@
-import { ProductService } from "../services/ProductService.js";
-import type { Response, Request } from "express";
+import cloudinary from "cloudinary";
+import type { Request, Response } from "express";
 import admin from "../config/dbFirebase.js";
+import { env } from "../config/env.js";
+import { ProductService } from "../services/ProductService.js";
+import { CustomResponse } from "../utils/CustomResponse.js";
+
+// Configura Cloudinary
+cloudinary.v2.config({
+  cloud_name: env.cloudinary.cloud_name,
+  api_key: env.cloudinary.api_key,
+  api_secret: env.cloudinary.api_secret,
+  secure: true,
+});
 
 export class ProductControllers {
   private service: ProductService;
@@ -14,13 +25,33 @@ export class ProductControllers {
     try {
       const product = req.body;
       if (!product.name) {
-        return res.status(400).json({ message: "Se requieren mas campos" });
+        return res
+          .status(400)
+          .json(CustomResponse.error("P001", "Se requieren mas campos"));
       }
-      await this.service.createProduct(product);
-      res.status(201).json({ message: "Producto creado correctamente" });
+      const productSave = await this.service.createProduct(product);
+      if (req.file) {
+        try {
+          const imageUrl = await this.uploadImage(productSave.id, req.file);
+
+          if (imageUrl) {
+            productSave.image = imageUrl;
+            await this.service.updateProduct(productSave.id, productSave);
+          }
+        } catch (error) {
+          console.error("Error al subir imagen:", error);
+        }
+      }
+      res
+        .status(201)
+        .json(
+          CustomResponse.success(productSave, "Producto creado correctamente")
+        );
     } catch (error) {
       console.error("Error al crear producto:", error);
-      return res.status(500).json({ message: "Error del server" });
+      return res
+        .status(500)
+        .json(CustomResponse.error("P002", "Error al crear producto"));
     }
   };
   public getAllProductsController = async (req: Request, res: Response) => {
@@ -78,6 +109,32 @@ export class ProductControllers {
     } catch (error) {
       console.error("Error al eliminar producto:", error);
       return res.status(500).json({ message: "Error del servidor" });
+    }
+  };
+
+  public uploadImage = async (
+    id: string,
+    file: Express.Multer.File
+  ): Promise<string | null> => {
+    try {
+      if (!file) {
+        return null;
+      }
+
+      const b64 = Buffer.from(file.buffer).toString("base64");
+      let dataURI = "data:" + file.mimetype + ";base64," + b64;
+
+      const cloudinaryResult = await cloudinary.v2.uploader.upload(dataURI, {
+        public_id: `product_${id}`, // Usar el ID del producto para el nombre de la imagen
+        asset_folder: "ecommerce/products",
+      });
+
+      // Obtener la URL de la imagen subida
+      const imageUrl = cloudinaryResult.secure_url;
+      return imageUrl;
+    } catch (error) {
+      console.error("Error al subir imagen:", error);
+      return null;
     }
   };
 }
