@@ -15,6 +15,10 @@ router.post(
 );
 router.get("/product/all", controllers.getAllProductsController);
 router.get("/product/:id", controllers.getProductsController);
-router.put("/product/:id", controllers.updateProductController);
+router.put(
+  "/product/:id",
+  upload.single("image"),
+  controllers.updateProductController
+);
 router.delete("/product/:id", controllers.deleteProductController);
 export default router;
