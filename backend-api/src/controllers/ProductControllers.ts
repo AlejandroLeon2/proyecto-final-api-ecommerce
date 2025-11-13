@@ -29,23 +29,17 @@ export class ProductControllers {
           .status(400)
           .json(CustomResponse.error("P001", "Se requieren mas campos"));
       }
+      product.price = Number(product.price);
+      product.stock = Number(product.stock);
       const productSave = await this.service.createProduct(product);
-      if (req.file) {
-        try {
-          const imageUrl = await this.uploadImage(productSave.id, req.file);
-
-          if (imageUrl) {
-            productSave.image = imageUrl;
-            await this.service.updateProduct(productSave.id, productSave);
-          }
-        } catch (error) {
-          console.error("Error al subir imagen:", error);
-        }
-      }
+      const productUpdated = await this.updateImage(productSave.id, req.file!);
       res
         .status(201)
         .json(
-          CustomResponse.success(productSave, "Producto creado correctamente")
+          CustomResponse.success(
+            productUpdated || productSave,
+            "Producto creado correctamente"
+          )
         );
     } catch (error) {
       console.error("Error al crear producto:", error);
@@ -87,10 +81,20 @@ export class ProductControllers {
       if (!id) {
         return res.status(400).json({ message: "ID requerido" });
       }
-      await this.service.updateProduct(id, updates);
+      delete updates.image;
+      updates.price = Number(updates.price);
+      updates.stock = Number(updates.stock);
+      const productUpdated = await this.service.updateProduct(id, updates);
+      const productUpdatedImage = await this.updateImage(id, req.file!);
+
       return res
         .status(200)
-        .json({ message: "Producto actualizado correctamente" });
+        .json(
+          CustomResponse.success(
+            productUpdatedImage || productUpdated,
+            "Producto actualizado correctamente"
+          )
+        );
     } catch (error) {
       console.error("Error al actualizar producto:", error);
       return res.status(500).json({ message: "Error del servidor" });
@@ -135,6 +139,19 @@ export class ProductControllers {
     } catch (error) {
       console.error("Error al subir imagen:", error);
       return null;
+    }
+  };
+  public updateImage = async (id: string, file: Express.Multer.File) => {
+    if (file) {
+      try {
+        const imageUrl = await this.uploadImage(id, file);
+
+        if (imageUrl) {
+          return await this.service.updateProduct(id, { image: imageUrl });
+        }
+      } catch (error) {
+        console.error("Error al actualizar imagen:", error);
+      }
     }
   };
 }

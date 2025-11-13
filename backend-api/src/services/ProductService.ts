@@ -43,23 +43,25 @@ export class ProductService {
       name: data.name,
       description: data.description,
       price: data.price,
-      createdAt: data.createdAt ? data.createdAt.toDate() : undefined,
+      createdAt: data.createdAt,
       stock: data.stock,
       category: data.category,
       status: data.status,
       image: data.image,
-      updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined,
+      updatedAt: data.updatedAt,
     };
   }
   async updateProduct(
     id: string,
     product: Partial<ProductInterface>
-  ): Promise<void> {
+  ): Promise<ProductInterface> {
     const productSave = this.db.collection(this.collectionName).doc(id);
     await productSave.update({
       ...product,
       updatedAt: new Date().toISOString(),
     });
+    const productUpdated = await this.getProductById(id);
+    return productUpdated!;
   }
   async deleteProduct(id: string) {
     const productSave = this.db.collection(this.collectionName).doc(id);
