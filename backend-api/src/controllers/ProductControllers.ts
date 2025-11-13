@@ -29,6 +29,8 @@ export class ProductControllers {
           .status(400)
           .json(CustomResponse.error("P001", "Se requieren mas campos"));
       }
+      product.price = Number(product.price);
+      product.stock = Number(product.stock);
       const productSave = await this.service.createProduct(product);
       const productUpdated = await this.updateImage(productSave.id, req.file!);
       res
@@ -80,6 +82,8 @@ export class ProductControllers {
         return res.status(400).json({ message: "ID requerido" });
       }
       delete updates.image;
+      updates.price = Number(updates.price);
+      updates.stock = Number(updates.stock);
       const productUpdated = await this.service.updateProduct(id, updates);
       const productUpdatedImage = await this.updateImage(id, req.file!);
 
