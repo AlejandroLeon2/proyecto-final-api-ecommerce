@@ -1,6 +1,6 @@
 export interface ICartItem{
     productId:string;
-    amount:number;
+    quantity:number;
 }
 export interface ICartItemResponse extends ICartItem{
     image:string;
