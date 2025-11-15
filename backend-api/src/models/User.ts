@@ -1,21 +1,19 @@
-export class Usuario {
+export class User {
   constructor(
     public uid: string,
     public email: string,
-    public nombre?: string,
-    public foto?: string,
+    public name?: string,
+    public image?: string,
     public rol: 'admin' | 'usuario' = 'usuario',
-    public carrito: string[] = []
   ) {}
 
   toFirestore() {
     return {
       email: this.email,
-      nombre: this.nombre || null,
-      foto: this.foto || null,
+      name: this.name || null,
+      image: this.image || null,
       rol: this.rol,
       lastLogin: new Date(),
-      carrito:this.carrito
     };
   }
 }

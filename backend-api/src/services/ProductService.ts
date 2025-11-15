@@ -1,4 +1,4 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import type { ProductInterface } from "../interface/ProductInterface.js";
 export class ProductService {
   constructor(public db: Firestore, public collectionName: string) {}
