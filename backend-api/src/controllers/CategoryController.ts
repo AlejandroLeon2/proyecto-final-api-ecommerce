@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import admin from "../config/dbFirebase.js";
+import type { IStatus } from "../interface/IStatus.js";
 import { CategoryService } from "../services/CategoryService.js";
 import { CustomResponse } from "../utils/CustomResponse.js";
 
@@ -34,7 +35,8 @@ export class CategoryController {
   };
   public getAllCategories = async (req: Request, res: Response) => {
     try {
-      const categories = await this.service.getAllCategories();
+      const status = req.query.status as IStatus;
+      const categories = await this.service.getAllCategories(status);
       return res.status(200).json(categories);
     } catch (error) {
       console.error("Error al obtener Categorías:", error);
