@@ -1,8 +1,8 @@
-
-import express from 'express';
-import cors from 'cors';
-import user from './routes/usuarioRoutes.js';
-import product from './routes/productRoutes.js';
+import cors from "cors";
+import express from "express";
+import category from "./routes/categoryRoutes.js";
+import product from "./routes/productRoutes.js";
+import user from "./routes/usuarioRoutes.js";
 /*
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,8 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use("/v1",user );
-app.use("/v1",product);
+app.use("/v1", user);
+app.use("/v1", product);
+app.use("/v1", category);
 
 // 🔧 Para obtener __dirname en ESModules
 /*const __filename = fileURLToPath(import.meta.url);
