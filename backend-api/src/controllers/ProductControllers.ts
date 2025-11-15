@@ -1,17 +1,8 @@
-import cloudinary from "cloudinary";
 import type { Request, Response } from "express";
 import admin from "../config/dbFirebase.js";
-import { env } from "../config/env.js";
 import { ProductService } from "../services/ProductService.js";
 import { CustomResponse } from "../utils/CustomResponse.js";
-
-// Configura Cloudinary
-cloudinary.v2.config({
-  cloud_name: env.cloudinary.cloud_name,
-  api_key: env.cloudinary.api_key,
-  api_secret: env.cloudinary.api_secret,
-  secure: true,
-});
+import cloudinary from "../config/cloudinary.js";
 
 export class ProductControllers {
   private service: ProductService;

@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { UserService } from "../services/UsuarioService.js";
-import { Usuario } from "../models/Usuario.js";
+import { User } from "../models/User.js";
 import admin from "../config/dbFirebase.js";
+import { CustomResponse } from "../utils/CustomResponse.js";
 
 interface RequestUser extends Request {
   user: {
@@ -11,12 +12,11 @@ interface RequestUser extends Request {
     picture?: string;
   };
 }
-
 export class UserControllers {
   private service: UserService;
   constructor(
     db: FirebaseFirestore.Firestore = admin.firestore(),
-    coleccion: string = "usuario"
+    coleccion: string = "user"
   ) {
     this.service = new UserService(db, coleccion);
   }
@@ -29,7 +29,7 @@ export class UserControllers {
       if (!user || !user.uid || !user.email) {
         return res.status(400).json({ error: "Datos de usuario incompletos" });
       }
-      const usuario = new Usuario(
+      const usuario = new User(
         user.uid,
         user.email,
         user.name,
