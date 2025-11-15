@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import user from './routes/usuarioRoutes.js';
 import product from './routes/productRoutes.js';
+import cart from './routes/cartRoutes.js';
 /*
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/v1",user );
 app.use("/v1",product);
+app.use("/v1",cart)
 
 // 🔧 Para obtener __dirname en ESModules
 /*const __filename = fileURLToPath(import.meta.url);

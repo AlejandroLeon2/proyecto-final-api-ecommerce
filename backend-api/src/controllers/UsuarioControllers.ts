@@ -16,7 +16,7 @@ export class UserControllers {
   private service: UserService;
   constructor(
     db: FirebaseFirestore.Firestore = admin.firestore(),
-    coleccion: string = "user"
+    coleccion: string = "usuario"
   ) {
     this.service = new UserService(db, coleccion);
   }

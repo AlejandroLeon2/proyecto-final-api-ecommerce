@@ -1,21 +1,21 @@
 export class CartItemDto {
   productId: string;
-  amount: number;
+  quantity: number;
 
-  constructor(productId: any, amount: any) {
+  constructor(productId: any, quantity: any) {
     this.productId = String(productId);
-    this.amount = Number(amount);
+    this.quantity = Number(quantity);
   }
 }
 
 export class CreateCartDto {
   uid: string;
-  items: CartItemDto[];
+  cart: CartItemDto[];
 
   constructor(uid: any, items: any[]) {
     this.uid = String(uid);
-    this.items = items.map(
-      (item) => new CartItemDto(item.productId, item.amount)
+    this.cart = items.map(
+      (item) => new CartItemDto(item.productId, item.quantity)
     );
   }
 }

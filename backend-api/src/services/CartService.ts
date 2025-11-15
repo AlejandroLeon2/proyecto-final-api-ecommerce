@@ -6,7 +6,7 @@ export class CartService {
   private productService: ProductService;
 
   constructor(public db: Firestore, public collectionName: string) {
-    this.productService = new ProductService(db, collectionName);
+    this.productService = new ProductService(db, "products");
   }
 
   async createCart(uid: string, cartUser: ICartItem[]): Promise<ICartItem[]> {
@@ -24,7 +24,7 @@ export class CartService {
     const cartEnriched = await Promise.all(
       cart.map(async (item:ICartItem) => {
         const product = await this.productService.getProductById(item.productId);
-        return { ...item, ...product };
+        return { ...item, name:product?.name ,category:product?.category,stock:product?.stock,price:product?.price, image:product?.image};
       })
     );
     return cartEnriched;
