@@ -67,4 +67,39 @@ export class ProductService {
     const productSave = this.db.collection(this.collectionName).doc(id);
     await productSave.delete();
   }
+
+  async getPaginatedProducts(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ products: ProductInterface[]; totalItems: number }> {
+    const offset = (page - 1) * limit;
+
+    const totalSnapshot = await this.db.collection(this.collectionName).get();
+    const totalItems = totalSnapshot.size;
+
+    const snapshot = await this.db
+      .collection(this.collectionName)
+      .orderBy("createdAt", "desc")
+      .offset(offset)
+      .limit(limit)
+      .get();
+
+    const products: ProductInterface[] = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        stock: data.stock,
+        category: data.category,
+        status: data.status,
+        image: data.image,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+    });
+
+    return { products, totalItems };
+  }
 }
