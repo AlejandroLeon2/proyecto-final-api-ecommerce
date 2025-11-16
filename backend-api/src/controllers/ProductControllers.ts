@@ -145,4 +145,34 @@ export class ProductControllers {
       }
     }
   };
+  public getPaginatedProductsController = async (req: Request, res: Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const { products, totalItems } = await this.service.getPaginatedProducts(page, limit);
+
+      const totalPages = Math.ceil(totalItems / limit);
+
+      return res.status(200).json(
+        CustomResponse.success(
+          {
+            products,
+            pagination: {
+              page,
+              limit,
+              totalItems,
+              totalPages,
+            },
+          },
+          "Productos paginados obtenidos correctamente"
+        )
+      );
+    } catch (error) {
+      console.error("Error al obtener productos paginados:", error);
+      return res
+        .status(500)
+        .json(CustomResponse.error("P002", "Error al obtener productos paginados"));
+    }
+  };
 }

@@ -5,5 +5,6 @@ const router = Router();
 const controllers = new UserControllers();
 
 router.post('/auth', verifyToken, controllers.autenticarUsuario);
+
 router.get('/usuario/:uid', controllers.obtenerUsuarioPorUid);
 export default router;
