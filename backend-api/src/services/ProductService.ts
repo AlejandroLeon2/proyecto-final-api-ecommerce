@@ -15,7 +15,7 @@ export class ProductService {
   }
 
   async getAllProducts(): Promise<ProductInterface[]> {
-    const snapshot = await this.db.collection(this.collectionName).get();
+    const snapshot = await this.db.collection(this.collectionName).where("status", "==", "active").get();
     const products: ProductInterface[] = snapshot.docs.map((item) => {
       const data = item.data();
       return {
@@ -74,11 +74,15 @@ export class ProductService {
   ): Promise<{ products: ProductInterface[]; totalItems: number }> {
     const offset = (page - 1) * limit;
 
-    const totalSnapshot = await this.db.collection(this.collectionName).get();
+    const totalSnapshot = await this.db
+      .collection(this.collectionName)
+      .where("status", "==", "active")
+      .get();
     const totalItems = totalSnapshot.size;
 
     const snapshot = await this.db
       .collection(this.collectionName)
+      .where("status", "==", "active")
       .orderBy("createdAt", "desc")
       .offset(offset)
       .limit(limit)
