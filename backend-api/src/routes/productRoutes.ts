@@ -22,4 +22,6 @@ router.put(
 );
 router.get("/products/paginated", controllers.getPaginatedProductsController);
 router.delete("/product/:id", controllers.deleteProductController);
+
+router.get("/products/search", controllers.searchProductsController);
 export default router;

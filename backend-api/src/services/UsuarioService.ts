@@ -24,5 +24,13 @@ export class UserService {
       data.rol
     );
   }
+
+  async obtenerRol(uid: string): Promise<string | null> {
+    const doc = await this.db.collection(this.coleccionNombre).doc(uid).get();
+    if (!doc.exists) return null;
+    const data = doc.data();
+    if (!data || !data.rol) return null;
+    return data.rol;
+  }
   
 }

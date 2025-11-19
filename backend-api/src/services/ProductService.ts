@@ -1,5 +1,6 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type { ProductInterface } from "../interface/ProductInterface.js";
+import { da } from "zod/locales";
 export class ProductService {
   constructor(public db: Firestore, public collectionName: string) {}
 
@@ -101,5 +102,42 @@ export class ProductService {
     });
 
     return { products, totalItems };
+  }
+
+  async searchProducts(textSearch: string): Promise<{products: ProductInterface[], moreItems: boolean}> {
+    
+    // Límite de resultados a 10 para barra de búsqueda
+    const limit = 10;
+    // usando la ruta de  producto linea 72 de productRoutes.ts
+    const snapshot = await this.db
+      .collection(this.collectionName)
+      .where("name", ">=", textSearch)
+      .where("name", "<=", textSearch + "\uf8ff")
+      .orderBy("name")
+      // obtener un item más para saber si hay más resultados
+      .limit(limit + 1)
+      .get();
+
+      // mapear los resultados con slice para limitar a 'limit' que es 10
+    const products: ProductInterface[] = snapshot.docs.slice(0, limit).map(doc => ({
+      id: doc.id,
+      name: doc.data().name,
+      description: doc.data().description,
+      price: doc.data().price,
+      stock: doc.data().stock,
+      category: doc.data().category,
+      status: doc.data().status,
+      image: doc.data().image,
+      createdAt: doc.data().createdAt,
+      updatedAt: doc.data().updatedAt,
+    }));
+
+    const moreItems = snapshot.size > limit;
+
+      const result: {products: ProductInterface[], moreItems: boolean} = (products.length > 0) ?
+        {products: products, moreItems: moreItems} : 
+        {products: [], moreItems: moreItems};
+
+    return  result
   }
 }
