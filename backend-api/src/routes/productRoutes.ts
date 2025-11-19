@@ -20,7 +20,7 @@ router.put(
   upload.single("image"),
   controllers.updateProductController
 );
-router.get("/products/paginated", controllers.getPaginatedProductsController);
+router.get("/product/paginated", controllers.getPaginatedProductsController);
 router.delete("/product/:id", controllers.deleteProductController);
 
 router.get("/products/search", controllers.searchProductsController);

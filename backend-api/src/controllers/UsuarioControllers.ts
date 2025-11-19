@@ -21,6 +21,38 @@ export class UserControllers {
     this.service = new UserService(db, coleccion);
   }
 
+// --- NUEVO MÉTODO PARA REGISTRO ---
+  public registrarUsuario = async (req: Request, res: Response) => {
+    try {
+      const { email, password, name } = req.body;
+
+      if (!email || !password || !name) {
+        return res.status(400).json({ error: "Datos incompletos (email, password, name son requeridos)" });
+      }
+
+      // 1. Llama al servicio para crear el usuario en Firebase Auth y Firestore
+      const nuevoUsuario = await this.service.crearUsuarioConEmail(
+        email,
+        password,
+        name
+      );
+
+      // 2. Devuelve una respuesta exitosa
+      // Usamos 201 (Created)
+      return res.status(201).json(
+        CustomResponse.success(nuevoUsuario, "Usuario registrado exitosamente")
+      );
+
+    } catch (error: any) {
+      console.error("Error al registrar usuario:", error);
+      // Manejar errores comunes de Firebase
+      if (error.code === 'auth/email-already-exists') {
+        return res.status(409).json(CustomResponse.error(error.code, "El correo electrónico ya está en uso."));
+      }
+      return res.status(500).json(CustomResponse.error("INTERNAL_SERVER_ERROR", "Error interno del servidor"));
+    }
+  };
+
   public autenticarUsuario = async (req: Request, res: Response) => {
     try {
       const userUid = req as RequestUser;
