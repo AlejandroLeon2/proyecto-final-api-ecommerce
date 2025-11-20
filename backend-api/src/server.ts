@@ -1,10 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import cart from './routes/cartRoutes.js';
+import cors from "cors";
+import express from "express";
+import cart from "./routes/cartRoutes.js";
 import category from "./routes/categoryRoutes.js";
+import order from "./routes/orderRoutes.js";
 import product from "./routes/productRoutes.js";
 import user from "./routes/usuarioRoutes.js";
-
 
 /*
 import path from 'path';
@@ -17,11 +17,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use("/v1",user );
-app.use("/v1",product);
-app.use("/v1",cart);
+app.use("/v1", user);
+app.use("/v1", product);
+app.use("/v1", cart);
 app.use("/v1", category);
-
+app.use("/v1", order);
 
 
 // 🔧 Para obtener __dirname en ESModules
