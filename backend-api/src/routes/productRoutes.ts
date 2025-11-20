@@ -13,6 +13,7 @@ router.post(
   upload.single("image"),
   controllers.createProductController
 );
+router.get("/product/paginated", controllers.getPaginatedProductsController);
 router.get("/product/all", controllers.getAllProductsController);
 router.get("/product/:id", controllers.getProductsController);
 router.put(
@@ -20,6 +21,6 @@ router.put(
   upload.single("image"),
   controllers.updateProductController
 );
-router.get("/product/paginated", controllers.getPaginatedProductsController);
+
 router.delete("/product/:id", controllers.deleteProductController);
 export default router;

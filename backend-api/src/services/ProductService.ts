@@ -1,7 +1,11 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type { ProductInterface } from "../interface/ProductInterface.js";
+import { CategoryService } from "./CategoryService.js";
 export class ProductService {
-  constructor(public db: Firestore, public collectionName: string) {}
+  private categoryService: CategoryService;
+  constructor(public db: Firestore, public collectionName: string) {
+    this.categoryService = new CategoryService(db, "categories");
+  }
 
   async createProduct(product: ProductInterface): Promise<ProductInterface> {
     const productSave = this.db.collection(this.collectionName).doc();
@@ -15,22 +19,31 @@ export class ProductService {
   }
 
   async getAllProducts(): Promise<ProductInterface[]> {
-    const snapshot = await this.db.collection(this.collectionName).where("status", "==", "active").get();
-    const products: ProductInterface[] = snapshot.docs.map((item) => {
-      const data = item.data();
-      return {
-        id: item.id,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        createdAt: data.createdAt ?? undefined,
-        stock: data.stock,
-        category: data.category,
-        status: data.status,
-        image: data.image,
-        updatedAt: data.updatedAt ?? undefined,
-      };
-    });
+    const snapshot = await this.db
+      .collection(this.collectionName)
+      .where("status", "==", "active")
+      .get();
+    const products: ProductInterface[] = await Promise.all(
+      snapshot.docs.map(async (item) => {
+        const data = item.data();
+        const category = await this.categoryService.getCategoryById(
+          data.category
+        );
+
+        return {
+          id: item.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          createdAt: data.createdAt ?? undefined,
+          stock: data.stock,
+          category: category?.name ?? "Sin categoría",
+          status: data.status,
+          image: data.image,
+          updatedAt: data.updatedAt ?? undefined,
+        };
+      })
+    );
     return products;
   }
   async getProductById(id: string): Promise<ProductInterface | null> {
@@ -38,6 +51,8 @@ export class ProductService {
     if (!product.exists) return null;
     const data = product.data();
     if (!data) return null;
+        const category = await this.categoryService.getCategoryById(data.category);
+
     return {
       id: product.id,
       name: data.name,
@@ -45,7 +60,7 @@ export class ProductService {
       price: data.price,
       createdAt: data.createdAt,
       stock: data.stock,
-      category: data.category,
+      category: category?.name ?? "Sin categoría",
       status: data.status,
       image: data.image,
       updatedAt: data.updatedAt,
@@ -88,21 +103,25 @@ export class ProductService {
       .limit(limit)
       .get();
 
-    const products: ProductInterface[] = snapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        stock: data.stock,
-        category: data.category,
-        status: data.status,
-        image: data.image,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
-      };
-    });
+    const products: ProductInterface[] = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const data = doc.data();
+        const category = await this.categoryService.getCategoryById(data.category);
+
+        return {
+          id: doc.id,
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          stock: data.stock,
+          category: category?.name ?? "Sin categoria",
+          status: data.status,
+          image: data.image,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+        };
+      })
+    );
 
     return { products, totalItems };
   }
