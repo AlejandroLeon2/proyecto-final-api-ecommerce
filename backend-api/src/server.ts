@@ -5,6 +5,7 @@ import category from "./routes/categoryRoutes.js";
 import order from "./routes/orderRoutes.js";
 import product from "./routes/productRoutes.js";
 import user from "./routes/usuarioRoutes.js";
+
 /*
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,6 +22,7 @@ app.use("/v1", product);
 app.use("/v1", cart);
 app.use("/v1", category);
 app.use("/v1", order);
+
 
 // 🔧 Para obtener __dirname en ESModules
 /*const __filename = fileURLToPath(import.meta.url);
