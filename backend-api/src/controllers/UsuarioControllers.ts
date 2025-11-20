@@ -79,6 +79,7 @@ export class UserControllers {
     }
   };
 
+  // Obtener usuario por UID para ruta pública o protegida
   public obtenerUsuarioPorUid = async (req: Request, res: Response) => {
     try {
       const uid = req.params.uid;
@@ -95,4 +96,27 @@ export class UserControllers {
       res.status(500).json({ error: "Error interno del servidor" });
     }
   };
+
+  // Obtener rol de usuario autenticado
+  public obtenerRolUsuario = async (req: Request, res: Response) => {
+    try {
+      // Obtener el uid del usuario autenticado desde res.locals
+      const uid = res.locals.uid;
+      // Verificar que el uid esté presente
+      if (!uid) {
+        return res.status(400).json({ error: "Falta el parámetro 'Uid'" });
+      }
+      // Obtener el rol del usuario
+      const rol = await this.service.obtenerRol(uid);
+      // Verificar que se haya encontrado un rol
+      if (!rol) {
+        return res.status(404).json({ error: "Rol no encontrado" });
+      }
+      // Enviar el rol en la respuesta
+      res.status(200).json({ rol: rol });
+    } catch (error) {
+      console.error("Error al obtener rol de usuario:", error);
+      res.status(500).json({ error: "Error interno del servidor" });
+    } 
+  }
 }
