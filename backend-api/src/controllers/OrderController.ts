@@ -32,30 +32,26 @@ export class OrderController {
       const { id } = req.params;
 
       if (!id) {
-        return res.status(400).json({
-          ok: false,
-          message: "Order ID is required",
-        });
+        return res
+          .status(400)
+          .json(CustomResponse.error("O004", "Order ID is required"));
       }
       const order = await this.service.getOrderById(id);
 
       if (!order) {
-        return res.status(404).json({
-          ok: false,
-          message: "Order not found",
-        });
+        return res
+          .status(404)
+          .json(CustomResponse.error("O005", "Order not found"));
       }
 
-      return res.status(200).json({
-        ok: true,
-        order,
-      });
+      return res
+        .status(200)
+        .json(CustomResponse.success(order, "Order fetched successfully"));
     } catch (error) {
       console.error("Error fetching order:", error);
-      return res.status(500).json({
-        ok: false,
-        message: "Error fetching order",
-      });
+      return res
+        .status(500)
+        .json(CustomResponse.error("O006", "Error fetching order"));
     }
   };
 
@@ -88,17 +84,14 @@ export class OrderController {
 
       const created = await this.service.createOrder(newOrder);
 
-      return res.status(201).json({
-        ok: true,
-        message: "Order created",
-        order: created,
-      });
+      return res
+        .status(201)
+        .json(CustomResponse.success(created, "Order created"));
     } catch (error) {
       console.error("Error creating order:", error);
-      return res.status(500).json({
-        ok: false,
-        message: "Error creating order",
-      });
+      return res
+        .status(500)
+        .json(CustomResponse.error("O007", "Error creating order"));
     }
   };
 }
