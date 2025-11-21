@@ -150,7 +150,24 @@ export class ProductControllers {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
 
-      const { products, totalItems } = await this.service.getPaginatedProducts(page, limit);
+      // 1. Procesamos las categorías
+      let categories: string[] = [];
+      const categoriesParam = req.query.categories;
+
+      if (categoriesParam) {
+        if (typeof categoriesParam === 'string') {
+          categories = categoriesParam.split(','); 
+        } else if (Array.isArray(categoriesParam)) {
+          categories = categoriesParam as string[];
+        }
+      }
+      
+      // Se agrega 'categories' como tercer parámetro
+      const { products, totalItems } = await this.service.getPaginatedProducts(
+        page, 
+        limit, 
+        categories //Se agrega este parámetro para filtrar por categorías
+      );
 
       const totalPages = Math.ceil(totalItems / limit);
 
