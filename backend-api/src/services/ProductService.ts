@@ -1,4 +1,4 @@
-import type { Firestore } from "firebase-admin/firestore";
+import type { Firestore, Query } from "firebase-admin/firestore"; // Importamos Query para tipado
 import type { ProductInterface } from "../interface/ProductInterface.js";
 import { CategoryService } from "./CategoryService.js";
 import { da } from "zod/locales";
@@ -85,21 +85,26 @@ export class ProductService {
     await productSave.delete();
   }
 
+// --- MÉTODO CON LOGS DE DEPURACIÓN ---
   async getPaginatedProducts(
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    categories: string[] = [] // Nuevo parámetro de categorías
   ): Promise<{ products: ProductInterface[]; totalItems: number }> {
     const offset = (page - 1) * limit;
 
-    const totalSnapshot = await this.db
+    let baseQuery: Query = this.db 
       .collection(this.collectionName)
-      .where("status", "==", "active")
-      .get();
-    const totalItems = totalSnapshot.size;
+      .where("status", "==", "active");
 
-    const snapshot = await this.db
-      .collection(this.collectionName)
-      .where("status", "==", "active")
+    if (categories && categories.length > 0) {
+      baseQuery = baseQuery.where("category", "in", categories);
+    }
+
+    // Obtenemos total
+    const totalSnapshot = await baseQuery.get();
+    const totalItems = totalSnapshot.size;
+    const snapshot = await baseQuery
       .orderBy("createdAt", "desc")
       .offset(offset)
       .limit(limit)
