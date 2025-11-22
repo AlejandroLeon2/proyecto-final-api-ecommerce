@@ -193,24 +193,5 @@ export class ProductControllers {
     }
   };
 
-  public searchProductsController = async (req: Request, res: Response) => {
-    // obtener el texto de búsqueda desde los parámetros de consulta
-    const textSearch = req.query.q as string || "";
-    // pedimos al firebase los datos que coincidan con la búsqueda
-    try {
-      const resul = await this.service.searchProducts(textSearch);
-      
-      return res.status(200).json(
-        CustomResponse.success(
-          resul,
-          `${resul.products.length !> 0 ? `productos encontrados.` : "No se encontraron productos."} ${resul.moreItems ? 'yes' : ''}`
-        )
-      );
-    } catch (error) {
-      console.error("Error al buscar productos:", error);
-      return res
-        .status(500)
-        .json(CustomResponse.error("P003", "Error al buscar productos"));
-    }
-  }
+  
 }
