@@ -5,6 +5,7 @@ import category from "./routes/categoryRoutes.js";
 import order from "./routes/orderRoutes.js";
 import product from "./routes/productRoutes.js";
 import user from "./routes/usuarioRoutes.js";
+import search from "./routes/searchRoutes.js";
 
 /*
 import path from 'path';
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use("/v1", search);
 app.use("/v1", user);
 app.use("/v1", product);
 app.use("/v1", cart);
