@@ -1,3 +1,6 @@
+import type { ICategory } from "./ICategory.js";
+import type { IStatus } from "./IStatus.js";
+
 export interface ProductInterface {
   id: string;
   name: string;
@@ -5,8 +8,8 @@ export interface ProductInterface {
   price: number;
   createdAt: string;
   stock: number;
-  category: string;
-  status: "active" | "inactive";
+  category: string | Partial<ICategory>;
+  status: IStatus;
   image: string;
   updatedAt?: string;
 }
