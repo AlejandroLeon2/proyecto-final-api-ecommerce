@@ -1,8 +1,9 @@
 import type { Request, Response } from "express";
+import cloudinary from "../config/cloudinary.js";
 import admin from "../config/dbFirebase.js";
+import type { IStatus } from "../interface/IStatus.js";
 import { ProductService } from "../services/ProductService.js";
 import { CustomResponse } from "../utils/CustomResponse.js";
-import cloudinary from "../config/cloudinary.js";
 
 export class ProductControllers {
   private service: ProductService;
@@ -41,7 +42,9 @@ export class ProductControllers {
   };
   public getAllProductsController = async (req: Request, res: Response) => {
     try {
-      const products = await this.service.getAllProducts();
+      const status = (req.query?.status as string)?.split(",") as IStatus[];
+
+      const products = await this.service.getAllProducts(status);
       return res.status(200).json(products);
     } catch (error) {
       console.error("Error al obtener productos:", error);
@@ -145,7 +148,10 @@ export class ProductControllers {
       }
     }
   };
-  public getPaginatedProductsController = async (req: Request, res: Response) => {
+  public getPaginatedProductsController = async (
+    req: Request,
+    res: Response
+  ) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -155,17 +161,17 @@ export class ProductControllers {
       const categoriesParam = req.query.categories;
 
       if (categoriesParam) {
-        if (typeof categoriesParam === 'string') {
-          categories = categoriesParam.split(','); 
+        if (typeof categoriesParam === "string") {
+          categories = categoriesParam.split(",");
         } else if (Array.isArray(categoriesParam)) {
           categories = categoriesParam as string[];
         }
       }
-      
+
       // Se agrega 'categories' como tercer parámetro
       const { products, totalItems } = await this.service.getPaginatedProducts(
-        page, 
-        limit, 
+        page,
+        limit,
         categories //Se agrega este parámetro para filtrar por categorías
       );
 
@@ -189,9 +195,9 @@ export class ProductControllers {
       console.error("Error al obtener productos paginados:", error);
       return res
         .status(500)
-        .json(CustomResponse.error("P002", "Error al obtener productos paginados"));
+        .json(
+          CustomResponse.error("P002", "Error al obtener productos paginados")
+        );
     }
   };
-
-  
 }

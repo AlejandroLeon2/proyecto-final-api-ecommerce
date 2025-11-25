@@ -16,12 +16,10 @@ export class CategoryService {
   }
 
   async getAllCategories(status?: IStatus): Promise<ICategory[]> {
-    const query = this.db.collection(this.collectionName);
-    if (status) {
-      query.where("status", "==", status);
-    } else {
-      query.where("status", "!=", STATUS.deleted);
-    }
+    const query = this.db
+      .collection(this.collectionName)
+      .where("status", status ? "==" : "!=", status ? status : STATUS.deleted);
+
     const snapshot = await query.get();
     const categories: ICategory[] = snapshot.docs.map((item) => {
       const data = item.data();
@@ -55,6 +53,42 @@ export class CategoryService {
     };
   }
 
+  async getCategoriesMap(
+    ids: string[],
+    status?: IStatus[]
+  ): Promise<Record<string, ICategory>> {
+    let categories: ICategory[] = [];
+    if (!ids?.length) {
+      categories = await this.getAllCategories();
+    } else {
+      const uniqueIds = new Set([...ids]);
+
+      const snapshot = await this.db.getAll(
+        ...uniqueIds
+          .values()
+          .map((id) => this.db.collection(this.collectionName).doc(id))
+      );
+      categories = snapshot.map(
+        (item) => ({ ...item.data(), id: item.id } as ICategory)
+      );
+    }
+
+    return categories.reduce<Record<string, ICategory>>((acc, data) => {
+      if (!data) return acc;
+      if (status && !status.includes(data.status)) return acc;
+
+      acc[data.id] = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+        status: data.status,
+      };
+      return acc;
+    }, {});
+  }
+
   async updateCategory(
     id: string,
     category: Partial<ICategory>
@@ -73,6 +107,5 @@ export class CategoryService {
     await categoryRef.update({
       status: STATUS.deleted,
     });
-    await categoryRef.delete();
   }
 }

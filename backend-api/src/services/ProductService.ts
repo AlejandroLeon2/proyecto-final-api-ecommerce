@@ -1,4 +1,6 @@
 import type { Firestore, Query } from "firebase-admin/firestore"; // Importamos Query para tipado
+import type { ICategory } from "../interface/ICategory.js";
+import { STATUS, type IStatus } from "../interface/IStatus.js";
 import type { ProductInterface } from "../interface/ProductInterface.js";
 import { CategoryService } from "./CategoryService.js";
 
@@ -19,40 +21,51 @@ export class ProductService {
     return productId;
   }
 
-  async getAllProducts(): Promise<ProductInterface[]> {
-    const snapshot = await this.db
+  async getAllProducts(status?: IStatus[]): Promise<ProductInterface[]> {
+    const query = this.db
       .collection(this.collectionName)
-      .where("status", "==", "active")
-      .get();
-    const products: ProductInterface[] = await Promise.all(
-      snapshot.docs.map(async (item) => {
-        const data = item.data();
-        const category = await this.categoryService.getCategoryById(
-          data.category
-        );
+      .where(
+        "status",
+        status?.length ? "in" : "==",
+        status?.length ? status : STATUS.active
+      );
 
-        return {
-          id: item.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          createdAt: data.createdAt ?? undefined,
-          stock: data.stock,
-          category: category?.name ?? "Sin categoría",
-          status: data.status,
-          image: data.image,
-          updatedAt: data.updatedAt ?? undefined,
-        };
-      })
-    );
-    return products;
+    const snapshot = await query.get();
+
+    const categories = (
+      await this.categoryService.getAllCategories(STATUS.active)
+    ).reduce<Record<string, ICategory>>((acc, item) => {
+      acc[item.id] = item;
+      return acc;
+    }, {});
+
+    const products = snapshot.docs.map((item) => {
+      const data = item.data();
+      const category = categories[data.category];
+
+      return {
+        id: item.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        createdAt: data.createdAt ?? undefined,
+        stock: data.stock,
+        category,
+        status: data.status,
+        image: data.image,
+        updatedAt: data.updatedAt ?? undefined,
+      };
+    });
+
+    return products.filter((product) => product.category) as ProductInterface[];
   }
+
   async getProductById(id: string): Promise<ProductInterface | null> {
     const product = await this.db.collection(this.collectionName).doc(id).get();
     if (!product.exists) return null;
     const data = product.data();
     if (!data) return null;
-        const category = await this.categoryService.getCategoryById(data.category);
+    const category = await this.categoryService.getCategoryById(data.category);
 
     return {
       id: product.id,
@@ -61,7 +74,7 @@ export class ProductService {
       price: data.price,
       createdAt: data.createdAt,
       stock: data.stock,
-      category: category?.name ?? "Sin categoría",
+      category: category || { id: "default" },
       status: data.status,
       image: data.image,
       updatedAt: data.updatedAt,
@@ -79,12 +92,14 @@ export class ProductService {
     const productUpdated = await this.getProductById(id);
     return productUpdated!;
   }
-  async deleteProduct(id: string) {
-    const productSave = this.db.collection(this.collectionName).doc(id);
-    await productSave.delete();
-  }
 
-// --- MÉTODO CON LOGS DE DEPURACIÓN ---
+  async deleteProduct(id: string) {
+    const productRef = this.db.collection(this.collectionName).doc(id);
+    await productRef.update({
+      status: STATUS.deleted,
+    });
+  }
+  // --- MÉTODO CON LOGS DE DEPURACIÓN ---
   async getPaginatedProducts(
     page: number = 1,
     limit: number = 10,
@@ -92,43 +107,56 @@ export class ProductService {
   ): Promise<{ products: ProductInterface[]; totalItems: number }> {
     const offset = (page - 1) * limit;
 
-    let baseQuery: Query = this.db 
+    //filtrar categorias activas
+    const activeCategoryDocs = await this.categoryService.getCategoriesMap(
+      categories,
+      [STATUS.active]
+    );
+
+    let baseQuery: Query = this.db
       .collection(this.collectionName)
       .where("status", "==", "active");
 
-    if (categories && categories.length > 0) {
-      baseQuery = baseQuery.where("category", "in", categories);
+    const categoriesIds = Object.keys(activeCategoryDocs);
+    if (categoriesIds.length) {
+      baseQuery = baseQuery.where("category", "in", categoriesIds);
+    } else {
+      return { products: [], totalItems: 0 };
     }
 
-    // Obtenemos total
-    const totalSnapshot = await baseQuery.get();
-    const totalItems = totalSnapshot.size;
+    // Filtrar documentos activos
     const snapshot = await baseQuery
       .orderBy("createdAt", "desc")
       .offset(offset)
       .limit(limit)
       .get();
 
-    const products: ProductInterface[] = await Promise.all(
-      snapshot.docs.map(async (doc) => {
-        const data = doc.data();
-        const category = await this.categoryService.getCategoryById(data.category);
+    const totalItems = snapshot.size;
 
-        return {
-          id: doc.id,
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          stock: data.stock,
-          category: category?.name ?? "Sin categoria",
-          status: data.status,
-          image: data.image,
-          createdAt: data.createdAt,
-          updatedAt: data.updatedAt,
-        };
-      })
-    );
+    const products = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      const category = activeCategoryDocs[data.category];
 
-    return { products, totalItems };
+      if (!category || category.status !== STATUS.active) return null;
+
+      return {
+        id: doc.id,
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        stock: data.stock,
+        category,
+        status: data.status,
+        image: data.image,
+        createdAt: data.createdAt,
+        updatedAt: data.updatedAt,
+      };
+    });
+
+    const filteredProducts = products.filter(
+      (p) => p !== null
+    ) as ProductInterface[];
+
+    return { products: filteredProducts, totalItems };
   }
 }
