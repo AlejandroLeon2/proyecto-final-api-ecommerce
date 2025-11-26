@@ -4,7 +4,11 @@ import { searchController } from "../controllers/searchComtroller.js";
 const router = Router();
 const controllers = new searchController();
 
+// Rutas de búsqueda de productos por keyUp
 router.get("/search/product", controllers.searchProducts);
+// ruta para paginación y filtro de categorías
+router.get("/search/paginated", controllers.getPaginatedProducts);
 
-// query completa ejemplo : http://localhost:3000/v1/search/product?data=textoBuscado
+
+
 export default router;
