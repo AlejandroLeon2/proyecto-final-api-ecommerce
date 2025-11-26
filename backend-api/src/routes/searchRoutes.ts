@@ -9,6 +9,4 @@ router.get("/search/product", controllers.searchProducts);
 // ruta para paginación y filtro de categorías
 router.get("/search/paginated", controllers.getPaginatedProducts);
 
-
-
 export default router;
