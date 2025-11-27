@@ -89,20 +89,57 @@ export class OrderService {
   async createOrder(order: Order): Promise<Order> {
     // Firestore asigna ID automáticamente
     const createdAt = Date.now();
+    const ordersCollection = this.db.collection(this.collectionName);
+    const productsCollection = this.db.collection("products");
 
-    const docRef = await this.db.collection(this.collectionName).add({
-      userId: order.userId,
-      items: order.items,
-      address: order.address,
-      total: order.total,
-      createdAt,
+    return await this.db.runTransaction(async (transaction) => {
+      // 1. Verificar y actualizar stock de cada producto
+      for (const item of order.items) {
+        if (!item.id) {
+          throw new Error(`Producto ${item.id} no existe`);
+        }
+        const productRef = productsCollection.doc(item.id);
+        const productSnap = await transaction.get(productRef);
+
+        if (!productSnap.exists) {
+          throw new Error(`Producto ${item.id} no existe`);
+        }
+
+        const productData = productSnap.data();
+        const currentStock = productData?.stock ?? 0;
+
+        if (currentStock < item.quantity) {
+          throw new Error(
+            `Stock insuficiente para el producto ${item.id}. Disponible: ${currentStock}`
+          );
+        }
+
+        // 2. Descontar stock
+        const newStock = currentStock - item.quantity;
+
+        transaction.update(productRef, {
+          stock: newStock,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      // 3. Crear la orden
+      const orderRef = ordersCollection.doc();
+      const orderData = {
+        userId: order.userId,
+        items: order.items,
+        address: order.address,
+        total: order.total,
+        createdAt,
+      };
+
+      transaction.set(orderRef, orderData);
+
+      // 4. Retornar el objeto completo
+      return {
+        id: orderRef.id,
+        ...orderData,
+      } as Order;
     });
-
-    const newDoc = await docRef.get();
-
-    return {
-      id: newDoc.id,
-      ...newDoc.data(),
-    } as Order;
   }
 }

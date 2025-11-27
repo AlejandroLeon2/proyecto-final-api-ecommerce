@@ -1,6 +1,6 @@
-import type { Product } from "../models/Product.js";
+import type { ProductInterface } from "./ProductInterface.js";
 
-export interface OrderItem extends Partial<Product> {
+export interface OrderItem extends Partial<ProductInterface> {
   quantity: number;
 }
 
