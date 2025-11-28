@@ -124,14 +124,14 @@ export class ProductService {
       return { products: [], totalItems: 0 };
     }
 
+    const totalItems = (await baseQuery.get()).size;
+
     // Filtrar documentos activos
     const snapshot = await baseQuery
       .orderBy("createdAt", "desc")
       .offset(offset)
       .limit(limit)
       .get();
-
-    const totalItems = snapshot.size;
 
     const products = snapshot.docs.map((doc) => {
       const data = doc.data();
