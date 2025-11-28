@@ -1,5 +1,6 @@
 import type { ProductInterface } from "../interface/ProductInterface.js";
 import { db } from "../config/firebase.js";
+import { da } from "zod/locales";
 type PartialProduct = Partial<ProductInterface>;
 
 // Tipo de resultado para paginación
@@ -71,7 +72,9 @@ export class searchService {
                     id: doc.id,
                     name: data.name,
                     image: data.image,
-                    category: data.category
+                    category: data.category,
+                    price: data.price,
+                    stock: data.stock
                 });
             }
         });
