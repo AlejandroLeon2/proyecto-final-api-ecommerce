@@ -39,7 +39,7 @@ export class OrderService {
       const data = user.data();
       if (!data) return acc;
 
-      acc[user.id] = { name: data.nombre, email: data.email };
+      acc[user.id] = { name: data.nombre || data.name, email: data.email };
       return acc;
     }, {} as { [key: string]: { name: string; email: string } });
 
